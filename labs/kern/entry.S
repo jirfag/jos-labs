@@ -58,6 +58,8 @@ relocated:
 	# We are gonna make first call soon.
 	# Maybe it is time to put NULL to some register before making the first call?
 	# Set the stack pointer
+
+	movl $0, %ebp
 	movl	$(bootstacktop),%esp
 
 	# now to C code

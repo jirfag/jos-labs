@@ -606,7 +606,17 @@ page_insert(pde_t *pgdir, struct Page *pp, void *va, int perm)
 static void
 boot_map_segment(pde_t *pgdir, uintptr_t la, size_t size, physaddr_t pa, int perm)
 {
-	// Fill this function in
+	assert(size % PGSIZE == 0);
+	assert(ROUNDUP(la, PGSIZE) == la);
+
+	int i;
+	for (i = 0; i < size / PGSIZE; ++i) {
+		pte_t *pte = pgdir_walk(pgdir, (void *)(la + i * PGSIZE), 1);
+		if (!pte)
+			panic("can't get page");
+
+		*pte = (pa + i * PGSIZE) | PTE_P | perm;
+	}
 }
 
 //

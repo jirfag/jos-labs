@@ -177,7 +177,7 @@ i386_vm_init(void)
 	// Your code goes here: 
 	assert(npage);
 	pages = boot_alloc(sizeof(*pages) * npage, 1);
-	cprintf("allocated %u pages\n", (uint32_t)pages);
+	cprintf("allocated %u pages\n", (uint32_t)(sizeof(*pages) * npage));
 
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
@@ -437,7 +437,22 @@ page_init(void)
 	// Change the code to reflect this.
 	int i;
 	LIST_INIT(&page_free_list);
-	for (i = 0; i < npage; i++) {
+
+	pages[0].pp_ref = 1;
+	memset(&pages[0].pp_link, 0, sizeof(pages[0].pp_link));
+
+	for (i = 1; i < IOPHYSMEM / PGSIZE; ++i) {
+		pages[i].pp_ref = 0;
+		LIST_INSERT_HEAD(&page_free_list, &pages[i], pp_link);
+	}
+
+	void *page_aligned_free_mem = ROUNDUP(boot_freemem, PGSIZE);
+	for (i = IOPHYSMEM / PGSIZE; i < PADDR(page_aligned_free_mem) / PGSIZE; ++i) {
+		pages[i].pp_ref = 1;
+		memset(&pages[i].pp_link, 0, sizeof(pages[i].pp_link));
+	}
+
+	for (i = PADDR(page_aligned_free_mem) / PGSIZE; i < npage; ++i) {
 		pages[i].pp_ref = 0;
 		LIST_INSERT_HEAD(&page_free_list, &pages[i], pp_link);
 	}
@@ -471,8 +486,15 @@ page_initpp(struct Page *pp)
 int
 page_alloc(struct Page **pp_store)
 {
-	// Fill this function in
-	return -E_NO_MEM;
+	if (LIST_EMPTY(&page_free_list))
+		return -E_NO_MEM;
+
+	struct Page *p = LIST_FIRST(&page_free_list);
+	LIST_REMOVE(p, pp_link);
+
+	page_initpp(p);
+	*pp_store = p;
+	return 0;
 }
 
 //
@@ -482,7 +504,8 @@ page_alloc(struct Page **pp_store)
 void
 page_free(struct Page *pp)
 {
-	// Fill this function in
+	assert(pp->pp_ref == 0);
+	LIST_INSERT_HEAD(&page_free_list, pp, pp_link);
 }
 
 //

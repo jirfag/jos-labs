@@ -188,7 +188,6 @@ i386_vm_init(void)
 	cprintf("page_init done\n");
 
 	check_page_alloc();
-	cprintf("check_page_alloc done\n");
 
 	page_check();
 	cprintf("page_check done\n");
@@ -587,9 +586,19 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 // and page2pa.
 //
 int
-page_insert(pde_t *pgdir, struct Page *pp, void *va, int perm) 
+page_insert(pde_t *pgdir, struct Page *pp, void *va, int perm)
 {
-	// Fill this function in
+	pte_t *pte = pgdir_walk(pgdir, va, 1);
+	if (!pte)
+		return -E_NO_MEM;
+
+	++pp->pp_ref;
+
+	if (*pte & PTE_P)
+		page_remove(pgdir, va);
+
+	*pte = page2pa(pp) | PTE_P | perm;
+
 	return 0;
 }
 
@@ -632,8 +641,13 @@ boot_map_segment(pde_t *pgdir, uintptr_t la, size_t size, physaddr_t pa, int per
 struct Page *
 page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
-	// Fill this function in
-	return NULL;
+	pte_t *pte = pgdir_walk(pgdir, va, 0);
+	if (!pte || !(*pte & PTE_P))
+		return NULL;
+
+	if (pte_store)
+		*pte_store = pte;
+	return pa2page(PTE_ADDR(*pte));
 }
 
 //
@@ -654,7 +668,15 @@ page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 void
 page_remove(pde_t *pgdir, void *va)
 {
-	// Fill this function in
+	pte_t *pte = pgdir_walk(pgdir, va, 0);
+	if (!pte || !(*pte & PTE_P))
+		return;
+
+	struct Page *p = pa2page(PTE_ADDR(*pte));
+	assert(p);
+	page_decref(p);
+	*pte = 0;
+	tlb_invalidate(pgdir, va);
 }
 
 //

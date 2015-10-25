@@ -176,8 +176,8 @@ i386_vm_init(void)
 	// You must allocate the array yourself.
 	// Your code goes here: 
 	assert(npage);
-	pages = boot_alloc(sizeof(*pages) * npage, 1);
-	cprintf("allocated %u pages\n", (uint32_t)(sizeof(*pages) * npage));
+	size_t sizeof_pages = ROUNDUP(npage * sizeof(struct Page), PGSIZE);
+	pages = boot_alloc(sizeof_pages, PGSIZE);
 
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
@@ -203,6 +203,8 @@ i386_vm_init(void)
 	//    - pages itself -- kernel RW, user NONE
 	// Your code goes here:
 
+	boot_map_segment(pgdir, UPAGES, sizeof_pages, PADDR(pages), PTE_U);
+
 	//////////////////////////////////////////////////////////////////////
         // Use the physical memory that bootstack refers to as
         // the kernel stack.  The complete VA
@@ -213,6 +215,8 @@ i386_vm_init(void)
 	//     Permissions: kernel RW, user NONE
 	// Your code goes here:
 
+	boot_map_segment(pgdir, KSTACKTOP-KSTKSIZE, KSTKSIZE, PADDR(bootstack), PTE_W);
+
 	//////////////////////////////////////////////////////////////////////
 	// Map all of physical memory at KERNBASE. 
 	// Ie.  the VA range [KERNBASE, 2^32) should map to
@@ -220,7 +224,9 @@ i386_vm_init(void)
 	// We might not have 2^32 - KERNBASE bytes of physical memory, but
 	// we just set up the mapping anyway.
 	// Permissions: kernel RW, user NONE
-	// Your code goes here: 
+	// Your code goes here:
+
+	boot_map_segment(pgdir, KERNBASE, 0xffffffff - KERNBASE + 1, 0, PTE_W);
 
 	// Check that the initial page directory has been set up correctly.
 	check_boot_pgdir();
@@ -598,6 +604,7 @@ page_insert(pde_t *pgdir, struct Page *pp, void *va, int perm)
 		page_remove(pgdir, va);
 
 	*pte = page2pa(pp) | PTE_P | perm;
+	pgdir[PDX(va)] |= perm;
 
 	return 0;
 }
@@ -617,6 +624,7 @@ boot_map_segment(pde_t *pgdir, uintptr_t la, size_t size, physaddr_t pa, int per
 {
 	assert(size % PGSIZE == 0);
 	assert(ROUNDUP(la, PGSIZE) == la);
+	assert(ROUNDUP(pa, PGSIZE) == pa);
 
 	int i;
 	for (i = 0; i < size / PGSIZE; ++i) {

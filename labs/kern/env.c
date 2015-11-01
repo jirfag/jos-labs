@@ -76,6 +76,7 @@ env_init(void)
 	for (i = NENV - 1; i >= 0; --i) {
 		LIST_INSERT_HEAD(&env_free_list, &envs[i], env_link);
 		envs[i].env_id = 0;
+		envs[i].env_status = ENV_FREE;
 	}
 }
 

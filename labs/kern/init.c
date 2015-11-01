@@ -49,6 +49,8 @@ i386_init(void)
 	// Don't touch -- used by grading script!
 	ENV_CREATE2(TEST, TESTSIZE)
 #else
+	ENV_CREATE(user_yield);
+	ENV_CREATE(user_yield);
 	ENV_CREATE(user_primes);
 #endif // TEST*
 

@@ -585,7 +585,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 	pte_t *page_table = page2kva(p);
 	assert(page_table);
 	memset(page_table, 0, sizeof(pte_t) * NPTENTRIES);
-	pgdir[PDX(va)] = PADDR(page_table) | PTE_P | PTE_W;
+	pgdir[PDX(va)] = PADDR(page_table) | PTE_P | PTE_W | PTE_U;
 
 	return &page_table[PTX(va)];
 }

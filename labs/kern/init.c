@@ -46,7 +46,12 @@ i386_init(void)
 	//ENV_CREATE(user_hello);
 	//ENV_CREATE(user_divzero);
 	//ENV_CREATE(user_softint);
-	ENV_CREATE(user_badsegment);
+	//ENV_CREATE(user_badsegment);
+
+	//ENV_CREATE(user_faultread);
+	//ENV_CREATE(user_faultreadkernel);
+	//ENV_CREATE(user_faultwrite);
+	ENV_CREATE(user_faultwritekernel);
 #endif // TEST*
 
 

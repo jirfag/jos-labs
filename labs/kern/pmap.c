@@ -646,6 +646,7 @@ boot_map_segment(pde_t *pgdir, uintptr_t la, size_t size, physaddr_t pa, int per
 	assert(size % PGSIZE == 0);
 	assert(ROUNDUP(la, PGSIZE) == la);
 	assert(ROUNDUP(pa, PGSIZE) == pa);
+	cprintf("map boot segment [%08x;%08x) -> [%08x;%08x)\n", la, la + size, pa, pa + size);
 
 	int i;
 	for (i = 0; i < size / PGSIZE; ++i) {

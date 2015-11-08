@@ -43,17 +43,18 @@ i386_init(void)
 	kclock_init();
 
 	// Should always have an idle process as first one.
-	ENV_CREATE(user_idle);
+	//ENV_CREATE(user_idle);
 
 #if defined(TEST)
 	// Don't touch -- used by grading script!
 	ENV_CREATE2(TEST, TESTSIZE)
 #else
-	ENV_CREATE(user_yield);
-	ENV_CREATE(user_yield);
-	ENV_CREATE(user_dumbfork);
+	//ENV_CREATE(user_yield);
+	//ENV_CREATE(user_yield);
+	//ENV_CREATE(user_dumbfork);
 
 	//ENV_CREATE(user_primes);
+	ENV_CREATE(user_faultalloc);
 #endif // TEST*
 
 

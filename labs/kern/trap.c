@@ -281,6 +281,8 @@ page_fault_handler(struct Trapframe *tf)
 	utf.utf_esp = tf->tf_esp;
 
 	tf->tf_esp = (tf->tf_esp < UXSTACKTOP && tf->tf_esp >= UXSTACKTOP - PGSIZE) ? (tf->tf_esp - 4) : UXSTACKTOP;
+	if (tf->tf_esp != UXSTACKTOP)
+		cprintf("recursive pagefault\n");
 	tf->tf_eip = (uintptr_t)curenv->env_pgfault_upcall;
 
 	tf->tf_esp -= sizeof(utf);

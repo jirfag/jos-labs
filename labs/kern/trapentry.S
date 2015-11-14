@@ -59,6 +59,8 @@ TRAPHANDLER_NOEC(trap_handle_simd_floating_point_error, T_SIMDERR);
 
 TRAPHANDLER_NOEC(trap_handle_system_call, T_SYSCALL);
 
+TRAPHANDLER_NOEC(irq_entry_timer, IRQ_OFFSET);
+
 _alltraps:
 	pushl %ds
 	pushl %es

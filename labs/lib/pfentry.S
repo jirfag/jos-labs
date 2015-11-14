@@ -64,20 +64,23 @@ _pgfault_upcall:
 	//   What registers are available for intermediate calculations?
 	//
 
-	addl $8, %esp
+	addl $8, %esp // skip utf_fault_va && utf_err
 
 	movl %esp, %ebx
-	movl 40(%esp), %ecx
-	movl 32(%esp), %edx
+	movl 40(%esp), %ecx // esp
+	movl 32(%esp), %edx // eip
 	movl %ecx, %esp
-	pushl %edx
+
+	pushl %edx // push eip to return with 'ret'
+
+    // change esp in utf
 	movl %esp, %ecx
 	movl %ebx, %esp
 	movl %ecx, 40(%esp)
 
 	// Restore the trap-time registers.
 	popal
-	addl $4, %esp
+	addl $4, %esp // skip eip
 
 	// Restore eflags from the stack.
 	popfl

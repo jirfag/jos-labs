@@ -128,7 +128,7 @@ idt_init(void)
 void
 print_trapframe(struct Trapframe *tf)
 {
-	cprintf("TRAP frame at %p\n", tf);
+	cprintf("TRAP frame at %p, curenv %x\n", tf, curenv ? curenv->env_id : 0);
 	print_regs(&tf->tf_regs);
 	cprintf("  es   0x----%04x\n", tf->tf_es);
 	cprintf("  ds   0x----%04x\n", tf->tf_ds);

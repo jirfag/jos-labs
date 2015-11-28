@@ -20,9 +20,25 @@
 int32_t
 ipc_recv(envid_t *from_env_store, void *pg, int *perm_store)
 {
-	// LAB 4: Your code here.
-	panic("ipc_recv not implemented");
-	return 0;
+	envid_t from_env;
+	int from_perm;
+
+	pg = pg ? : (void *)UTOP;
+	int r = sys_ipc_recv(pg);
+	if (r) {
+		from_env = from_perm = 0;
+	} else {
+		from_env = env->env_ipc_from;
+		from_perm = env->env_ipc_perm;
+		r = env->env_ipc_value;
+	}
+
+	if (from_env_store)
+		*from_env_store = from_env;
+	if (perm_store)
+		*perm_store = from_perm;
+
+	return r;
 }
 
 // Send 'val' (and 'pg' with 'perm', if 'pg' is nonnull) to 'toenv'.
@@ -36,6 +52,23 @@ ipc_recv(envid_t *from_env_store, void *pg, int *perm_store)
 void
 ipc_send(envid_t to_env, uint32_t val, void *pg, int perm)
 {
-	// LAB 4: Your code here.
-	panic("ipc_send not implemented");
+	pg = pg ? : (void *)UTOP;
+
+	for (;;) {
+		int r = sys_ipc_try_send(to_env, val, pg, perm);
+
+		switch (r) {
+		case 0:
+		case 1:
+			return;
+
+		case -E_IPC_NOT_RECV:
+			sys_yield();
+			continue;
+
+		default:
+			panic("sys_ipc_try_send(%08x, %u, %08x, %d) failed: %e\n",
+				to_env, val, pg, perm, r);
+		}
+	}
 }

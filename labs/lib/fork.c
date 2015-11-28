@@ -91,6 +91,21 @@ duppage(envid_t envid, unsigned pn)
 	return 0;
 }
 
+void
+duppage2(envid_t dstenv, void *addr)
+{
+	int r;
+
+	// This is NOT what you should do in your fork.
+	if ((r = sys_page_alloc(dstenv, addr, PTE_P|PTE_U|PTE_W)) < 0)
+		panic("sys_page_alloc: %e", r);
+	if ((r = sys_page_map(dstenv, addr, 0, UTEMP, PTE_P|PTE_U|PTE_W)) < 0)
+		panic("sys_page_map: %e", r);
+	memmove(UTEMP, addr, PGSIZE);
+	if ((r = sys_page_unmap(0, UTEMP)) < 0)
+		panic("sys_page_unmap: %e", r);
+}
+
 //
 // User-level fork with copy-on-write.
 // Set up our page fault handler appropriately.
@@ -139,7 +154,8 @@ fork(void)
 		}
 	}
 
-	duppage(child_id, PPN(&child_id));
+//	duppage(child_id, PPN(&child_id));
+	duppage2(child_id, ROUNDDOWN(&child_id, PGSIZE));
 //	cprintf("[%08x] parent stack begin addr: %08x\n", env->env_id, ROUNDDOWN(&child_id, PGSIZE));
 
 	int r = sys_page_alloc(child_id, (void *)(UXSTACKTOP - PGSIZE), PTE_P|PTE_U|PTE_W);

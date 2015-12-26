@@ -18,7 +18,7 @@ pgfault(struct UTrapframe *utf)
 	uint32_t err = utf->utf_err;
 	int r;
 
-	cprintf("[%08x] pgfault on %08x\n", env->env_id, addr);
+//	cprintf("[%08x] pgfault on %08x\n", env->env_id, addr);
 
 	// Check that the faulting access was (1) a write, and (2) to a
 	// copy-on-write page.  If not, panic.

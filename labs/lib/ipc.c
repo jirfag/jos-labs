@@ -20,23 +20,24 @@
 int32_t
 ipc_recv(envid_t *from_env_store, void *pg, int *perm_store)
 {
-	envid_t from_env;
-	int from_perm;
+	envid_t from;
+	int perm;
 
 	pg = pg ? : (void *)UTOP;
 	int r = sys_ipc_recv(pg);
 	if (r) {
-		from_env = from_perm = 0;
+		cprintf("sys_ipc_recv() failed: %e\n", r);
+		from = perm = 0;
 	} else {
-		from_env = env->env_ipc_from;
-		from_perm = env->env_ipc_perm;
+		from = env->env_ipc_from;
+		perm = env->env_ipc_perm;
 		r = env->env_ipc_value;
 	}
 
-	if (from_env_store)
-		*from_env_store = from_env;
-	if (perm_store)
-		*perm_store = from_perm;
+	if (from_env_store != NULL)
+		*from_env_store = from;
+	if (perm_store != NULL)
+		*perm_store = perm;
 
 	return r;
 }

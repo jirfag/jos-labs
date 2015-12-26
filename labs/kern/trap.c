@@ -85,6 +85,7 @@ idt_init(void)
 	extern void trap_handle_system_call();
 
 	extern void irq_entry_timer();
+	extern void irq_entry_kbd();
 
 	SETGATE(idt[T_DIVIDE], 0, GD_KT, trap_handle_divide_error, 0);
 	SETGATE(idt[T_DEBUG], 0, GD_KT, trap_handle_debug_exception, 0);
@@ -107,6 +108,7 @@ idt_init(void)
 	SETGATE(idt[T_SYSCALL], 0, GD_KT, trap_handle_system_call, 3);
 
 	SETGATE(idt[IRQ_OFFSET], 0, GD_KT, irq_entry_timer, 0);
+	SETGATE(idt[33], 0, GD_KT, irq_entry_kbd, 0);
 
 	// Setup a TSS so that we get the right stack
 	// when we trap to the kernel.
@@ -181,6 +183,13 @@ trap_dispatch(struct Trapframe *tf)
 	if (tf->tf_trapno == IRQ_OFFSET + IRQ_SPURIOUS) {
 		cprintf("Spurious interrupt on irq 7\n");
 		print_trapframe(tf);
+		return;
+	}
+	if (tf->tf_trapno == 33) {
+		cprintf("KEYBOARD AHTUNG AHTUNG!!!!!!!!!!!!!\n");
+		cprintf("KEYBOARD AHTUNG AHTUNG!!!!!!!!!!!!!\n");
+		cprintf("KEYBOARD AHTUNG AHTUNG!!!!!!!!!!!!!\n");
+		cprintf("KEYBOARD AHTUNG AHTUNG!!!!!!!!!!!!!\n");
 		return;
 	}
 

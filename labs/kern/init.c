@@ -61,7 +61,8 @@ i386_init(void)
 	//ENV_CREATE(user_spin);
 
 	//ENV_CREATE(user_pingpong);
-	ENV_CREATE(user_primes);
+	//ENV_CREATE(user_primes);
+	ENV_CREATE(user_ipctest);
 #endif // TEST*
 
 

@@ -101,7 +101,7 @@ sys_exofork(void)
 	child->env_tf = curenv->env_tf;
 	child->env_tf.tf_regs.reg_eax = 0;
 
-	cprintf("env %08x exoforked %08x\n", curenv->env_id, child->env_id);
+//	cprintf("env %08x exoforked %08x\n", curenv->env_id, child->env_id);
 
 	return child->env_id;
 }
